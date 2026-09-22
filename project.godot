@@ -1,0 +1,28 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; but it can also be edited manually.
+
+config_version=5
+
+[application]
+
+config/name="Huawei Petal Ads Demo"
+config/features=PackedStringArray("4.2", "Forward Plus")
+run/main_scene="res://scenes/main.tscn"
+config/icon="res://icon.svg"
+
+[display]
+
+window/size/viewport_width=720
+window/size/viewport_height=1280
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+window/handheld/orientation=1
+
+[autoload]
+
+PetalAds="*res://scripts/petal_ads_wrapper.gd"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"

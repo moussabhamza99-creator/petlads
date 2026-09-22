@@ -1,0 +1,8 @@
+[config]
+name="GodotPetalAds"
+binary_type="local"
+binary="GodotPetalAds.aar"
+
+[dependencies]
+custom_maven_repos=["https://developer.huawei.com/repo/"]
+remote=["com.huawei.hms:ads-lite:13.4.65.300"]
