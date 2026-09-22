@@ -107,8 +107,8 @@ func _on_banner_loaded() -> void:
 	_log("Banner Ad chargee avec succes !")
 	btn_show_banner.disabled = false
 
-func _on_banner_failed(error_code: int) -> void:
-	_log("Echec de la Banner Ad. Code: %d" % error_code)
+func _on_banner_failed(error_code: int, error_msg: String) -> void:
+	_log("ERREUR BANNER -> " + error_msg)
 
 func _on_banner_clicked() -> void:
 	_log("Banner Ad cliquee !")
@@ -117,8 +117,8 @@ func _on_interstitial_loaded() -> void:
 	_log("Interstitial Ad charge avec succes !")
 	btn_show_interstitial.disabled = false
 
-func _on_interstitial_failed(error_code: int) -> void:
-	_log("Echec de l'Interstitial Ad. Code: %d" % error_code)
+func _on_interstitial_failed(error_code: int, error_msg: String) -> void:
+	_log("ERREUR INTERSTITIEL -> " + error_msg)
 
 func _on_interstitial_opened() -> void:
 	_log("Interstitial Ad ouvert.")
@@ -131,8 +131,8 @@ func _on_reward_loaded() -> void:
 	_log("Reward Video chargee avec succes !")
 	btn_show_reward.disabled = false
 
-func _on_reward_failed(error_code: int) -> void:
-	_log("Echec de la Reward Video. Code: %d" % error_code)
+func _on_reward_failed(error_code: int, error_msg: String) -> void:
+	_log("ERREUR REWARD VIDEO -> " + error_msg)
 
 func _on_reward_opened() -> void:
 	_log("Reward Video ouverte.")

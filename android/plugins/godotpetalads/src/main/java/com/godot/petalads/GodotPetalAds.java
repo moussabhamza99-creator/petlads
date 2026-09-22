@@ -73,11 +73,18 @@ public class GodotPetalAds extends GodotPlugin {
     @UsedByGodot
     public void initAds() {
         Activity activity = getActivity();
-        if (activity == null) return;
+        if (activity == null) {
+            Log.e(TAG, "initAds failed: Activity is null");
+            return;
+        }
 
         activity.runOnUiThread(() -> {
-            HwAds.init(activity);
-            Log.d(TAG, "Huawei Petal Ads SDK Initialized");
+            try {
+                HwAds.init(activity);
+                Log.d(TAG, "Huawei Petal Ads SDK Initialized successfully");
+            } catch (Exception e) {
+                Log.e(TAG, "Exception during HwAds.init: " + e.getMessage(), e);
+            }
         });
     }
 
@@ -86,76 +93,86 @@ public class GodotPetalAds extends GodotPlugin {
     @UsedByGodot
     public void loadBanner(final String adId, final String position) {
         final Activity activity = getActivity();
-        if (activity == null) return;
+        if (activity == null) {
+            Log.e(TAG, "loadBanner failed: Activity is null");
+            return;
+        }
 
         activity.runOnUiThread(() -> {
-            if (bannerView != null) {
-                if (layout != null) {
-                    layout.removeView(bannerView);
-                }
-                bannerView.destroy();
-                bannerView = null;
-            }
-
-            bannerView = new BannerView(activity);
-            bannerView.setAdId(adId);
-            bannerView.setBannerAdSize(BannerAdSize.BANNER_SIZE_320_50);
-
-            bannerView.setAdListener(new AdListener() {
-                @Override
-                public void onAdLoaded() {
-                    Log.d(TAG, "Banner Ad loaded successfully.");
-                    emitSignal("on_banner_loaded");
+            try {
+                if (bannerView != null) {
+                    if (layout != null) {
+                        layout.removeView(bannerView);
+                    }
+                    bannerView.destroy();
+                    bannerView = null;
                 }
 
-                @Override
-                public void onAdFailed(int errorCode) {
-                    Log.e(TAG, "Banner Ad failed to load. Code: " + errorCode);
-                    emitSignal("on_banner_failed", errorCode);
+                bannerView = new BannerView(activity);
+                bannerView.setAdId(adId);
+                bannerView.setBannerAdSize(BannerAdSize.BANNER_SIZE_320_50);
+
+                bannerView.setAdListener(new AdListener() {
+                    @Override
+                    public void onAdLoaded() {
+                        Log.d(TAG, "Banner Ad loaded successfully.");
+                        emitSignal("on_banner_loaded");
+                    }
+
+                    @Override
+                    public void onAdFailed(int errorCode) {
+                        Log.e(TAG, "Banner Ad failed to load. Error Code: " + errorCode);
+                        emitSignal("on_banner_failed", errorCode);
+                    }
+
+                    @Override
+                    public void onAdClicked() {
+                        Log.d(TAG, "Banner Ad clicked.");
+                        emitSignal("on_banner_clicked");
+                    }
+                });
+
+                ViewGroup rootView = activity.findViewById(android.R.id.content);
+                if (layout == null) {
+                    layout = new FrameLayout(activity);
+                    layout.setBackgroundColor(Color.TRANSPARENT);
+                    if (rootView != null) {
+                        rootView.addView(layout, new FrameLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                        ));
+                    } else {
+                        activity.addContentView(layout, new FrameLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                        ));
+                    }
                 }
 
-                @Override
-                public void onAdClicked() {
-                    emitSignal("on_banner_clicked");
-                }
-            });
+                FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.WRAP_CONTENT,
+                        FrameLayout.LayoutParams.WRAP_CONTENT
+                );
 
-            ViewGroup rootView = activity.findViewById(android.R.id.content);
-            if (layout == null) {
-                layout = new FrameLayout(activity);
-                layout.setBackgroundColor(Color.TRANSPARENT);
-                if (rootView != null) {
-                    rootView.addView(layout, new FrameLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                    ));
+                if ("TOP".equalsIgnoreCase(position)) {
+                    layoutParams.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
                 } else {
-                    activity.addContentView(layout, new FrameLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                    ));
+                    layoutParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
                 }
+
+                layout.addView(bannerView, layoutParams);
+                bannerView.setVisibility(View.GONE);
+
+                layout.bringToFront();
+                layout.requestLayout();
+
+                AdParam adParam = new AdParam.Builder().build();
+                bannerView.loadAd(adParam);
+                Log.d(TAG, "Loading Banner Ad with ID: " + adId);
+            } catch (Exception e) {
+                Log.e(TAG, "Exception in loadBanner: " + e.getMessage(), e);
+                emitSignal("on_banner_failed", 1);
             }
-
-            FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.WRAP_CONTENT,
-                    FrameLayout.LayoutParams.WRAP_CONTENT
-            );
-
-            if ("TOP".equalsIgnoreCase(position)) {
-                layoutParams.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
-            } else {
-                layoutParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-            }
-
-            layout.addView(bannerView, layoutParams);
-            bannerView.setVisibility(View.GONE);
-
-            layout.bringToFront();
-            layout.requestLayout();
-
-            AdParam adParam = new AdParam.Builder().build();
-            bannerView.loadAd(adParam);
         });
     }
 
@@ -176,6 +193,8 @@ public class GodotPetalAds extends GodotPlugin {
                 bannerView.requestLayout();
                 bannerView.invalidate();
                 Log.d(TAG, "Banner View brought to front and visible.");
+            } else {
+                Log.w(TAG, "showBanner called but bannerView is null.");
             }
         });
     }
@@ -188,6 +207,7 @@ public class GodotPetalAds extends GodotPlugin {
         activity.runOnUiThread(() -> {
             if (bannerView != null) {
                 bannerView.setVisibility(View.GONE);
+                Log.d(TAG, "Banner View hidden.");
             }
         });
     }
@@ -197,37 +217,48 @@ public class GodotPetalAds extends GodotPlugin {
     @UsedByGodot
     public void loadInterstitial(final String adId) {
         final Activity activity = getActivity();
-        if (activity == null) return;
+        if (activity == null) {
+            Log.e(TAG, "loadInterstitial failed: Activity is null");
+            return;
+        }
 
         activity.runOnUiThread(() -> {
-            interstitialAd = new InterstitialAd(activity);
-            interstitialAd.setAdId(adId);
-            interstitialAd.setAdListener(new AdListener() {
-                @Override
-                public void onAdLoaded() {
-                    Log.d(TAG, "Interstitial Ad loaded.");
-                    emitSignal("on_interstitial_loaded");
-                }
+            try {
+                interstitialAd = new InterstitialAd(activity);
+                interstitialAd.setAdId(adId);
+                interstitialAd.setAdListener(new AdListener() {
+                    @Override
+                    public void onAdLoaded() {
+                        Log.d(TAG, "Interstitial Ad loaded successfully.");
+                        emitSignal("on_interstitial_loaded");
+                    }
 
-                @Override
-                public void onAdFailed(int errorCode) {
-                    Log.e(TAG, "Interstitial Ad failed to load: " + errorCode);
-                    emitSignal("on_interstitial_failed", errorCode);
-                }
+                    @Override
+                    public void onAdFailed(int errorCode) {
+                        Log.e(TAG, "Interstitial Ad failed to load. Error Code: " + errorCode);
+                        emitSignal("on_interstitial_failed", errorCode);
+                    }
 
-                @Override
-                public void onAdOpened() {
-                    emitSignal("on_interstitial_opened");
-                }
+                    @Override
+                    public void onAdOpened() {
+                        Log.d(TAG, "Interstitial Ad opened.");
+                        emitSignal("on_interstitial_opened");
+                    }
 
-                @Override
-                public void onAdClosed() {
-                    emitSignal("on_interstitial_closed");
-                }
-            });
+                    @Override
+                    public void onAdClosed() {
+                        Log.d(TAG, "Interstitial Ad closed.");
+                        emitSignal("on_interstitial_closed");
+                    }
+                });
 
-            AdParam adParam = new AdParam.Builder().build();
-            interstitialAd.loadAd(adParam);
+                AdParam adParam = new AdParam.Builder().build();
+                interstitialAd.loadAd(adParam);
+                Log.d(TAG, "Loading Interstitial Ad with ID: " + adId);
+            } catch (Exception e) {
+                Log.e(TAG, "Exception in loadInterstitial: " + e.getMessage(), e);
+                emitSignal("on_interstitial_failed", 1);
+            }
         });
     }
 
@@ -250,26 +281,35 @@ public class GodotPetalAds extends GodotPlugin {
     @UsedByGodot
     public void loadRewardVideo(final String adId) {
         final Activity activity = getActivity();
-        if (activity == null) return;
+        if (activity == null) {
+            Log.e(TAG, "loadRewardVideo failed: Activity is null");
+            return;
+        }
 
         activity.runOnUiThread(() -> {
-            rewardAd = new RewardAd(activity, adId);
-            RewardAdLoadListener listener = new RewardAdLoadListener() {
-                @Override
-                public void onRewardAdLoaded() {
-                    Log.d(TAG, "Reward Ad loaded.");
-                    emitSignal("on_reward_loaded");
-                }
+            try {
+                rewardAd = new RewardAd(activity, adId);
+                RewardAdLoadListener listener = new RewardAdLoadListener() {
+                    @Override
+                    public void onRewardAdLoaded() {
+                        Log.d(TAG, "Reward Ad loaded successfully.");
+                        emitSignal("on_reward_loaded");
+                    }
 
-                @Override
-                public void onRewardAdFailedToLoad(int errorCode) {
-                    Log.e(TAG, "Reward Ad failed to load: " + errorCode);
-                    emitSignal("on_reward_failed", errorCode);
-                }
-            };
+                    @Override
+                    public void onRewardAdFailedToLoad(int errorCode) {
+                        Log.e(TAG, "Reward Ad failed to load. Error Code: " + errorCode);
+                        emitSignal("on_reward_failed", errorCode);
+                    }
+                };
 
-            AdParam adParam = new AdParam.Builder().build();
-            rewardAd.loadAd(adParam, listener);
+                AdParam adParam = new AdParam.Builder().build();
+                rewardAd.loadAd(adParam, listener);
+                Log.d(TAG, "Loading Reward Ad with ID: " + adId);
+            } catch (Exception e) {
+                Log.e(TAG, "Exception in loadRewardVideo: " + e.getMessage(), e);
+                emitSignal("on_reward_failed", 1);
+            }
         });
     }
 
@@ -283,11 +323,13 @@ public class GodotPetalAds extends GodotPlugin {
                 rewardAd.show(activity, new RewardAdStatusListener() {
                     @Override
                     public void onRewardAdOpened() {
+                        Log.d(TAG, "Reward Ad opened.");
                         emitSignal("on_reward_opened");
                     }
 
                     @Override
                     public void onRewardAdClosed() {
+                        Log.d(TAG, "Reward Ad closed.");
                         emitSignal("on_reward_closed");
                     }
 
@@ -301,7 +343,7 @@ public class GodotPetalAds extends GodotPlugin {
 
                     @Override
                     public void onRewardAdFailedToShow(int errorCode) {
-                        Log.e(TAG, "Reward Ad failed to show: " + errorCode);
+                        Log.e(TAG, "Reward Ad failed to show. Error Code: " + errorCode);
                     }
                 });
             } else {

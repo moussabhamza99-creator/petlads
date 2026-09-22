@@ -6,16 +6,16 @@ extends Node
 
 # Signals
 signal banner_loaded
-signal banner_failed(error_code)
+signal banner_failed(error_code, error_msg)
 signal banner_clicked
 
 signal interstitial_loaded
-signal interstitial_failed(error_code)
+signal interstitial_failed(error_code, error_msg)
 signal interstitial_opened
 signal interstitial_closed
 
 signal reward_loaded
-signal reward_failed(error_code)
+signal reward_failed(error_code, error_msg)
 signal reward_opened
 signal reward_closed
 signal reward_earned(type, amount)
@@ -30,6 +30,19 @@ const PLUGIN_NAME: String = "GodotPetalAds"
 var _plugin_singleton: Object = null
 var _is_initialized: bool = false
 
+# Dictionnaire des codes d'erreur officiels Huawei HMS Ads
+const ERROR_CODES = {
+	0: "SUCCESS - Requete reussie",
+	1: "INNER_ERROR - Erreur interne du SDK HMS Ads",
+	2: "INVALID_REQUEST - Parametres de requete invalides ou ID d'emplacement d'annonce incorrect",
+	3: "NETWORK_ERROR - Erreur de connexion Internet (Vérifiez le Wifi/Donnees ou permissions INTERNET)",
+	4: "NO_AD - Pas d'annonce disponible (Pas de remplissage / No Fill pour cet emplacement)",
+	5: "LOW_API - Version API non supportee",
+	6: "BANNER_SIZE_INVALID - Taille de banniere invalide",
+	7: "HMS_CORE_UNAVAILABLE - HMS Core non installe ou non mis a jour sur cet appareil",
+	800: "HMS_CORE_INTERNAL_ERROR - Service HMS Core inaccessible"
+}
+
 func _ready() -> void:
 	if Engine.has_singleton(PLUGIN_NAME):
 		_plugin_singleton = Engine.get_singleton(PLUGIN_NAME)
@@ -39,6 +52,11 @@ func _ready() -> void:
 		print("[PetalAdsWrapper] Running in editor/desktop. Using Mock Ads implementation.")
 
 	init_ads()
+
+func get_error_message(error_code: int) -> String:
+	if ERROR_CODES.has(error_code):
+		return "Code %d: %s" % [error_code, ERROR_CODES[error_code]]
+	return "Code %d: Erreur inconnue HMS Ads" % error_code
 
 func init_ads() -> void:
 	if _plugin_singleton:
@@ -155,17 +173,41 @@ func _connect_signals() -> void:
 		_plugin_singleton.connect("on_reward_earned", Callable(self, "_on_reward_earned"))
 
 # Native Callbacks
-func _on_banner_loaded() -> void: banner_loaded.emit()
-func _on_banner_failed(error_code: int) -> void: banner_failed.emit(error_code)
-func _on_banner_clicked() -> void: banner_clicked.emit()
+func _on_banner_loaded() -> void:
+	banner_loaded.emit()
 
-func _on_interstitial_loaded() -> void: interstitial_loaded.emit()
-func _on_interstitial_failed(error_code: int) -> void: interstitial_failed.emit(error_code)
-func _on_interstitial_opened() -> void: interstitial_opened.emit()
-func _on_interstitial_closed() -> void: interstitial_closed.emit()
+func _on_banner_failed(error_code: int) -> void:
+	var msg = get_error_message(error_code)
+	banner_failed.emit(error_code, msg)
 
-func _on_reward_loaded() -> void: reward_loaded.emit()
-func _on_reward_failed(error_code: int) -> void: reward_failed.emit(error_code)
-func _on_reward_opened() -> void: reward_opened.emit()
-func _on_reward_closed() -> void: reward_closed.emit()
-func _on_reward_earned(type: String, amount: int) -> void: reward_earned.emit(type, amount)
+func _on_banner_clicked() -> void:
+	banner_clicked.emit()
+
+func _on_interstitial_loaded() -> void:
+	interstitial_loaded.emit()
+
+func _on_interstitial_failed(error_code: int) -> void:
+	var msg = get_error_message(error_code)
+	interstitial_failed.emit(error_code, msg)
+
+func _on_interstitial_opened() -> void:
+	interstitial_opened.emit()
+
+func _on_interstitial_closed() -> void:
+	interstitial_closed.emit()
+
+func _on_reward_loaded() -> void:
+	reward_loaded.emit()
+
+func _on_reward_failed(error_code: int) -> void:
+	var msg = get_error_message(error_code)
+	reward_failed.emit(error_code, msg)
+
+func _on_reward_opened() -> void:
+	reward_opened.emit()
+
+func _on_reward_closed() -> void:
+	reward_closed.emit()
+
+func _on_reward_earned(type: String, amount: int) -> void:
+	reward_earned.emit(type, amount)
