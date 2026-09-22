@@ -1,0 +1,13 @@
+{
+  "app_id": "testq63x296kg1",
+  "banner": {
+    "ad_id": "testw6ac88gbe3",
+    "position": "BOTTOM"
+  },
+  "interstitial": {
+    "ad_id": "testb4z2vhch44"
+  },
+  "rewarded_video": {
+    "ad_id": "testx9dtjw2sp5"
+  }
+}

@@ -9,9 +9,10 @@ Cette application d'exemple montre comment intégrer les publicités **Huawei Pe
 ```text
 .
 ├── project.godot                     # Fichier de configuration du projet Godot 4
+├── petal_ads_config.json             # Fichier de configuration JSON pour les IDs Petal Ads
 ├── icon.svg                          # Icône de l'application
 ├── scripts/
-│   └── petal_ads_wrapper.gd          # Singleton / Autoload GDScript gérant Petal Ads & Mock
+│   └── petal_ads_wrapper.gd          # Singleton GDScript lisant le JSON & gérant Petal Ads & Mock
 ├── scenes/
 │   ├── main.tscn                     # Scène principale UI (Boutons + Logs + Compteur de pièces)
 │   └── main.gd                       # Script de contrôle de l'interface
@@ -27,54 +28,64 @@ Cette application d'exemple montre comment intégrer les publicités **Huawei Pe
 
 ---
 
-## 🚀 Identifiants de Test Huawei Petal Ads
+## ⚙️ Configuration JSON (`petal_ads_config.json`)
 
-Le projet utilise par défaut les identifiants officiels de test fournis par Huawei :
+Toutes les clés d'annonces sont configurables dans le fichier `res://petal_ads_config.json` :
 
-* **Bannière (Banner) :** `testw6ac88gbe3`
-* **Interstitiel (Interstitial) :** `testb4z2vhch44`
-* **Vidéo Récompensée (Rewarded Video) :** `testx9dtjw2sp5`
+```json
+{
+  "app_id": "testq63x296kg1",
+  "banner": {
+    "ad_id": "testw6ac88gbe3",
+    "position": "BOTTOM"
+  },
+  "interstitial": {
+    "ad_id": "testb4z2vhch44"
+  },
+  "rewarded_video": {
+    "ad_id": "testx9dtjw2sp5"
+  }
+}
+```
+
+Pour utiliser vos propres annonces Huawei AppGallery / Petal Ads Publisher, modifiez simplement les valeurs de ce fichier JSON sans toucher au code GDScript.
 
 ---
 
 ## 🛠️ Fonctionnalités du Singleton (`petal_ads_wrapper.gd`)
 
-Le wrapper `PetalAds` (déclaré comme Autoload dans Godot) gère à la fois le mode **Android natif** et le mode **Simulation / Mock** lorsque vous exécutez le jeu dans l'éditeur Godot ou sur PC.
+Le wrapper `PetalAds` (Autoload Godot) charge automatiquement le fichier `petal_ads_config.json` au démarrage.
 
 ### Méthodes disponibles :
 * `init_ads()` : Initialise le SDK Petal Ads.
-* `load_banner(ad_id, position)` : Charge une bannière ("TOP" ou "BOTTOM").
+* `load_banner(ad_id, position)` : Charge une bannière (utilise la position et l'ID du JSON par défaut).
 * `show_banner()` : Affiche la bannière.
 * `hide_banner()` : Masque la bannière.
-* `load_interstitial(ad_id)` : Charge une publicité interstitielle.
-* `show_interstitial()` : Affiche l'interstitiel chargé.
-* `load_reward_video(ad_id)` : Charge une vidéo récompensée.
+* `load_interstitial(ad_id)` : Charge un interstitiel (ID du JSON par défaut).
+* `show_interstitial()` : Affiche l'interstitiel.
+* `load_reward_video(ad_id)` : Charge une vidéo récompensée (ID du JSON par défaut).
 * `show_reward_video()` : Affiche la vidéo récompensée.
-
-### Signaux émis :
-* `banner_loaded`, `banner_failed(error_code)`, `banner_clicked`
-* `interstitial_loaded`, `interstitial_failed(error_code)`, `interstitial_opened`, `interstitial_closed`
-* `reward_loaded`, `reward_failed(error_code)`, `reward_opened`, `reward_closed`, `reward_earned(type, amount)`
 
 ---
 
 ## 📱 Compilation et Exportation Android pour Godot 4
 
-### 1. Compilation du Plugin Android Natif
-Pour générer le fichier `.aar` de la bibliothèque native :
-1. Téléchargez la bibliothèque Godot Android `godot-lib.template_release.aar` correspondant à votre version de Godot 4 et placez-la dans `android/plugins/godotpetalads/libs/`.
-2. Ouvrez un terminal dans le dossier `android/` et exécutez :
-   ```bash
-   ./gradlew :plugins:godotpetalads:assembleRelease
-   ```
-3. Copiez le fichier `.aar` généré depuis `android/plugins/godotpetalads/build/outputs/aar/` vers `android/plugins/godotpetalads/GodotPetalAds.aar`.
+### 1. Compilation du Plugin Android Natif sous Windows / Linux
+Ouvrez un terminal dans le dossier `android/` :
+* **Windows (PowerShell) :**
+  ```powershell
+  .\gradlew.bat :plugins:godotpetalads:assembleRelease
+  ```
+* **Linux / Mac / Git Bash :**
+  ```bash
+  ./gradlew :plugins:godotpetalads:assembleRelease
+  ```
 
 ### 2. Configuration de l'Exportation Godot
 1. Ouvrez le projet dans **Godot 4**.
 2. Allez dans **Projet > Installer le modèle de build Android...** (Android Build Template).
-3. Dans **Projet > Paramètres du projet > Autoload**, vérifiez que `PetalAds` pointe vers `res://scripts/petal_ads_wrapper.gd`.
-4. Allez dans **Projet > Exporter...**, ajoutez un profil **Android**.
-5. Cochez **Utiliser le build personnalisé (Custom Build)**.
-6. Dans la section **Plugins**, cochez **GodotPetalAds**.
-7. Dans les permissions Android (`Permissions`), assurez-vous d'activer `INTERNET` et `ACCESS_NETWORK_STATE`.
-8. Exportez le projet au format `.apk`.
+3. Allez dans **Projet > Exporter...**, ajoutez un profil **Android**.
+4. Cochez **Utiliser le build personnalisé (Custom Build)**.
+5. Dans la section **Plugins**, cochez **GodotPetalAds**.
+6. Dans les permissions Android (`Permissions`), activez `INTERNET` et `ACCESS_NETWORK_STATE`.
+7. Exportez le projet au format `.apk`.
