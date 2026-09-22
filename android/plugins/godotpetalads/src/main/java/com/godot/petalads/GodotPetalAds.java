@@ -120,12 +120,21 @@ public class GodotPetalAds extends GodotPlugin {
                 }
             });
 
+            ViewGroup rootView = activity.findViewById(android.R.id.content);
             if (layout == null) {
                 layout = new FrameLayout(activity);
-                activity.addContentView(layout, new FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                ));
+                layout.setBackgroundColor(Color.TRANSPARENT);
+                if (rootView != null) {
+                    rootView.addView(layout, new FrameLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                    ));
+                } else {
+                    activity.addContentView(layout, new FrameLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                    ));
+                }
             }
 
             FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
@@ -142,6 +151,9 @@ public class GodotPetalAds extends GodotPlugin {
             layout.addView(bannerView, layoutParams);
             bannerView.setVisibility(View.GONE);
 
+            layout.bringToFront();
+            layout.requestLayout();
+
             AdParam adParam = new AdParam.Builder().build();
             bannerView.loadAd(adParam);
         });
@@ -155,6 +167,15 @@ public class GodotPetalAds extends GodotPlugin {
         activity.runOnUiThread(() -> {
             if (bannerView != null) {
                 bannerView.setVisibility(View.VISIBLE);
+                if (layout != null) {
+                    layout.bringToFront();
+                    layout.requestLayout();
+                    layout.invalidate();
+                }
+                bannerView.bringToFront();
+                bannerView.requestLayout();
+                bannerView.invalidate();
+                Log.d(TAG, "Banner View brought to front and visible.");
             }
         });
     }
