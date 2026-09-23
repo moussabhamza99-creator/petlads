@@ -24,5 +24,6 @@ repositories {
 
 dependencies {
     compileOnly files('libs/godot-lib.template_release.aar')
+    implementation 'com.huawei.agconnect:agconnect-core:1.9.1.300'
     implementation 'com.huawei.hms:ads-lite:13.4.65.300'
 }

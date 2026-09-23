@@ -1,6 +1,6 @@
 # Application Demo Huawei Petal Ads pour Godot 4+
 
-Cette application d'exemple montre comment intégrer les publicités **Huawei Petal Ads** (HMS Ads) dans un projet **Godot 4+** pour Android (Bannière, Interstitiel et Vidéo Récompensée / Rewarded Video).
+Cette application d'exemple montre comment intégrer les publicités **Huawei Petal Ads** (HMS Ads) et **Huawei AppGallery Connect (AGConnect)** dans un projet **Godot 4+** pour Android (Bannière, Interstitiel et Vidéo Récompensée / Rewarded Video).
 
 ---
 
@@ -9,6 +9,7 @@ Cette application d'exemple montre comment intégrer les publicités **Huawei Pe
 ```text
 .
 ├── project.godot                     # Fichier de configuration du projet Godot 4
+├── agconnect-services.json           # Fichier AppGallery Connect configuration
 ├── petal_ads_config.json             # Fichier de configuration JSON pour les IDs Petal Ads
 ├── icon.svg                          # Icône de l'application
 ├── scripts/
@@ -17,14 +18,24 @@ Cette application d'exemple montre comment intégrer les publicités **Huawei Pe
 │   ├── main.tscn                     # Scène principale UI (Boutons + Logs + Compteur de pièces)
 │   └── main.gd                       # Script de contrôle de l'interface
 └── android/
+    ├── agconnect-services.json       # Fichier AppGallery Connect pour Android Build
     ├── settings.gradle
     └── plugins/
         └── godotpetalads/            # Module Plugin Android natif Godot 4
             ├── GodotPetalAds.gdip    # Fichier de configuration du plugin Godot
-            ├── build.gradle          # Configuration Gradle et dépendance HMS Ads Lite SDK
+            ├── build.gradle          # Configuration Gradle (AGConnect + HMS Ads Lite SDK)
             └── src/main/java/com/godot/petalads/
-                └── GodotPetalAds.java # Code Java du plugin (Petal Ads SDK)
+                └── GodotPetalAds.java # Code Java du plugin (AGConnect & Petal Ads SDK)
 ```
+
+---
+
+## 🔑 Fichier `agconnect-services.json` (Huawei AppGallery Connect)
+
+Pour lier l'application à votre console **Huawei AppGallery Connect** :
+1. Connectez-vous à la console [Huawei AppGallery Connect](https://developer.huawei.com/consumer/en/service/josp/agc/index.html).
+2. Téléchargez le fichier `agconnect-services.json` correspondant à votre projet.
+3. Remplacez le fichier `agconnect-services.json` à la racine et dans le dossier `android/agconnect-services.json` (ou `android/build/agconnect-services.json`).
 
 ---
 
@@ -49,22 +60,6 @@ Toutes les clés d'annonces sont configurables dans le fichier `res://petal_ads_
 ```
 
 Pour utiliser vos propres annonces Huawei AppGallery / Petal Ads Publisher, modifiez simplement les valeurs de ce fichier JSON sans toucher au code GDScript.
-
----
-
-## 🛠️ Fonctionnalités du Singleton (`petal_ads_wrapper.gd`)
-
-Le wrapper `PetalAds` (Autoload Godot) charge automatiquement le fichier `petal_ads_config.json` au démarrage.
-
-### Méthodes disponibles :
-* `init_ads()` : Initialise le SDK Petal Ads.
-* `load_banner(ad_id, position)` : Charge une bannière (utilise la position et l'ID du JSON par défaut).
-* `show_banner()` : Affiche la bannière.
-* `hide_banner()` : Masque la bannière.
-* `load_interstitial(ad_id)` : Charge un interstitiel (ID du JSON par défaut).
-* `show_interstitial()` : Affiche l'interstitiel.
-* `load_reward_video(ad_id)` : Charge une vidéo récompensée (ID du JSON par défaut).
-* `show_reward_video()` : Affiche la vidéo récompensée.
 
 ---
 

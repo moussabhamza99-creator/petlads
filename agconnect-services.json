@@ -1,0 +1,20 @@
+{
+  "agconnect": {
+    "app_id": "101234567",
+    "client_id": "101234567",
+    "client_secret": "test_client_secret",
+    "project_id": "101234567"
+  },
+  "client": {
+    "app_id": "101234567",
+    "package_name": "com.example.godotpetaladsdemo",
+    "client_id": "101234567",
+    "client_secret": "test_client_secret"
+  },
+  "service": {
+    "analytics": {
+      "channel_id": ""
+    }
+  },
+  "region": "DRA"
+}

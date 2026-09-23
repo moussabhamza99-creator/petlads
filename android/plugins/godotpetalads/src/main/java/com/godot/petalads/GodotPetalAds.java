@@ -11,6 +11,7 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 
+import com.huawei.agconnect.AGConnectInstance;
 import com.huawei.hms.ads.AdListener;
 import com.huawei.hms.ads.AdParam;
 import com.huawei.hms.ads.BannerAdSize;
@@ -80,10 +81,15 @@ public class GodotPetalAds extends GodotPlugin {
 
         activity.runOnUiThread(() -> {
             try {
+                // Initialize Huawei AppGallery Connect
+                AGConnectInstance.initialize(activity.getApplicationContext());
+                Log.d(TAG, "Huawei AppGallery Connect (AGConnect) Initialized");
+
+                // Initialize Huawei Petal Ads
                 HwAds.init(activity);
                 Log.d(TAG, "Huawei Petal Ads SDK Initialized successfully");
             } catch (Exception e) {
-                Log.e(TAG, "Exception during HwAds.init: " + e.getMessage(), e);
+                Log.e(TAG, "Exception during AGConnect/HwAds.init: " + e.getMessage(), e);
             }
         });
     }
